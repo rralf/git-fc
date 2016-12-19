@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+# git-fc, pick a commit from a foreign repository
+#
+# Copyright (c) Ralf Ramsauer <ralf@ramses-pyramidenbau.de>
+#
+# This work is licensed under the terms of the GNU GPL, version 2.  See
+# the LICENSE file in the top-level directory.
+
+REPO=$1
+HASH=$2
+GIT=git
+
+function usage {
+	if [ ! -z "$2" ]
+	then
+		echo $2 >&2
+		echo >&2
+	fi
+
+	echo "git-cr, pick a commit from a foreign repository" >&2
+	echo "  Usage: git-cr dir-to-repo commit-hash" >&2
+	exit $1
+}
+
+function check_is_git_repo {
+	repo=$1
+	$GIT -C $repo rev-parse --is-inside-work-tree > /dev/null 2>&1
+	if [[ $? != 0 ]]
+	then
+		usage -1 "not a git repository: $repo"
+	fi
+}
+
+if [ -z "$1" ]
+then
+	usage -1 "Please define a foreign repository"
+fi
+
+if [ -z "$2" ]
+then
+	usage -1 "Please define a foreign commit hash"
+fi
+
+check_is_git_repo $REPO
+check_is_git_repo "."
+
+$GIT -C ${REPO} format-patch -k -1 --stdout ${HASH} | git am -3 -k
