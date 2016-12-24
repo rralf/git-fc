@@ -45,4 +45,4 @@ fi
 check_is_git_repo $REPO
 check_is_git_repo "."
 
-$GIT -C ${REPO} format-patch -k -1 --stdout ${HASH} | git am -3 -k
+$GIT -C ${REPO} format-patch -k -1 --stdout ${HASH} | $GIT am -3 -k
