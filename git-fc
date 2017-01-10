@@ -8,7 +8,6 @@
 # the LICENSE file in the top-level directory.
 
 REPO=$1
-HASH=$2
 GIT=git
 
 function usage {
@@ -19,7 +18,7 @@ function usage {
 	fi
 
 	echo "git-cr, pick a commit from a foreign repository" >&2
-	echo "  Usage: git-cr dir-to-repo commit-hash" >&2
+	echo "  Usage: git-cr dir-to-repo commit-hash(es)" >&2
 	exit $1
 }
 
@@ -45,4 +44,13 @@ fi
 check_is_git_repo $REPO
 check_is_git_repo "."
 
-$GIT -C ${REPO} format-patch -k -1 --stdout ${HASH} | $GIT am -3 -k
+for hash in $(seq 2 $#)
+do
+	hash=${!hash}
+	$GIT -C ${REPO} format-patch -k -1 --stdout ${hash} | $GIT am -3 -k
+	if [ $? -ne 0 ]
+	then
+		echo "Error applying ${hash}" >&2
+		exit $?
+	fi
+done
